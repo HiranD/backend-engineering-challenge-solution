@@ -1,6 +1,6 @@
 # backend-engineering-challenge-solution
 
-	__python solution.py --input_file events.json --window_size 10__
+__python solution.py --input_file events.json --window_size 10__
 
 I have selected pandas to process data because of it's easyness to change, in case if I want to add more features.
 
