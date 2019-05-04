@@ -7,46 +7,14 @@ from datetime import datetime, timedelta
 
 
 def main(args):
-    # Calculating start and end time for the processing
-    if args.now_ == "now":
-        now_ = datetime.now().replace(microsecond=0, second=0)-timedelta(minutes=1)
-    else:
-        try:
-            now_ = datetime.strptime(args.now_, "%Y-%m-%d_%H:%M")
-        except ValueError:
-            print("Given date-time is not comply with needed format -> yyyy-mm-dd_HH:MM")
-            sys.exit(1)
-        except:
-            print("Error: Check following stack trace for more info.")
-            print(traceback.format_exc())
-            sys.exit(1)
-
-    from_ = now_ - timedelta(minutes=args.window_size)
-    print("Started calculation from {} to {}.".format(str(from_), str(now_)))
-
-    # Read json bojects to a list
-    json_list = []
+# Read json bojects to a list
+    data = []
     try:
         with open(args.path_to_json) as f:
             for line in f:
-                json_list.append(json.loads(line))
+                data.append(json.loads(line))
     except ValueError as e:
         print("Please check the given file content comply with needed JSON format -> " + str(e))
-        sys.exit(1)
-    except:
-        print("Error: Check following stack trace for more info.")
-        print(traceback.format_exc())
-        sys.exit(1)
-
-    # Selects record within our time-gap
-    data = []
-    try:
-        for record in json_list:
-            t = datetime.strptime(record['timestamp'], '%Y-%m-%d %H:%M:%S.%f')
-            if (from_ <= t and now_ > t):
-                data.append(record)
-    except ValueError as e:
-        print("Error in timestamp conversion -> " + str(e))
         sys.exit(1)
     except:
         print("Error: Check following stack trace for more info.")
@@ -62,6 +30,13 @@ def main(args):
     df = pd.DataFrame(sortedData, columns=[
                       'timestamp', 'duration', 'nr_words', 'source_language', 'target_language', 'client_name'])
 
+    # Conveting to datetime and making index out of timestamp
+    df['timestamp'] = pd.to_datetime(df.timestamp)
+    df = df.set_index('timestamp')
+
+    start_time = df.index.min().floor('min')
+    end_time = df.index.max().ceil('min')
+
     # Translation filter
     if args.translate is not None:
         try:
@@ -76,26 +51,26 @@ def main(args):
                 print('Given source_language does not exist!')
                 sys.exit(1)
             else:
-                print("Filter results by translation -> source_language:{}, target_language:{}".format(
-                    source_language, target_language))
+                print("Filter results by translation -> source_language:{}, target_language:{}"
+                    .format(source_language, target_language))
                 df = df[df.target_language == target_language]
                 df = df[df.source_language == source_language]
                 checkDataAmount(df.index)
 
-    # Conveting to datetime and making index out of timestamp
-    df['timestamp'] = pd.to_datetime(df.timestamp)
-    df = df.set_index('timestamp')
+    # Resampling data for 1 minute and averaging
+    df = df[['duration']].resample('min', label='right', closed='left').mean()
+
+    # Adding missing first time slot
+    idx = pd.date_range(start_time, end_time, freq='1min').rename('timestamp')
+    df = df.reindex(idx)
+
     # Calculating moving average
-    df['MA'] = df[['duration']].rolling('1min').mean().round(2)
-    # Removing other columns, reseting index and rounding time to ceiling minute
+    df['MA'] = df[['duration']].rolling(args.window_size, min_periods=1).mean().round(2)
     df = df[['MA']]
+
+    # Filling NAN and reseting index
+    df = df.fillna(0)
     df = df.reset_index()
-    df['timestamp'] = df['timestamp'].dt.ceil('min')
-    # First minute result shoud be removed, because it was partially calcualted
-    df = df.iloc[1:]
-    # Remove duplicate rows using timestamp and keep last
-    df = df.drop_duplicates(
-        subset='timestamp', keep='last').reset_index(drop=True)
     # Renaming and converting to string
     df.rename(columns={'timestamp': 'time',
                        'MA': 'average_delivery_time'}, inplace=True)
@@ -115,12 +90,9 @@ def main(args):
 
 def checkDataAmount(data):
     # Checking for the amount of data after filtering.
-    if len(data) == 0:
-        print("No data within the specified time.")
+    if len(data) <= 1:
+        print("No enough data to process.")
         sys.exit(1)
-    # I just use window_size. Because its seems like a better choice than putting a constant value.
-    elif len(data) <= args.window_size:
-        print("Warning: Amount of data within the specified time is very less.")
 
 
 # Parsing arguments from command prompt
@@ -142,12 +114,6 @@ parser.add_argument('--output_loc',
                     default='output_result.json',
                     type=str,
                     help='Relative path to save results.')
-
-parser.add_argument('--now',
-                    dest='now_',
-                    default='now',
-                    type=str,
-                    help='Relative time (yyyy-mm-dd_HH:MM) to start calculation.')
 
 parser.add_argument('--translation',
                     dest='translate',
