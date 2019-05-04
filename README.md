@@ -1,10 +1,8 @@
 # backend-engineering-challenge-solution
 
-__python solution.py --input_file events.json --window_size 10__
+*eg: python solution.py --input_file events.json --window_size 10*
 
-I have selected pandas to process data because of it's easyness to change, in case if I want to add more features.
-
-### _*python solution.py --help*_
+### _python solution.py --help_
 
 ```
 optional arguments:
@@ -15,7 +13,7 @@ optional arguments:
 ### Additional features
     --translation       Filter results by translation type (source_language:target_language).
 
-*eg: python solution.py --input_file events.json --window_size 10 --translation en:fr*
+*eg: python solution.py --input_file events_filter.json --window_size 10 --translation en:fr*
 
 ### Requirements
     python 3.6

@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 
 
 def main(args):
-# Read json bojects to a list
+    # Read json bojects to a list
     data = []
     try:
         with open(args.path_to_json) as f:
@@ -24,11 +24,11 @@ def main(args):
     checkDataAmount(data)
 
     # In case sorting the rocords by time
-    sortedData = sorted(data, key=lambda x: datetime.strptime(
-        x['timestamp'], '%Y-%m-%d %H:%M:%S.%f'), reverse=False)
+    sortedData = sorted(data,
+                        key=lambda x: datetime.strptime(x['timestamp'], '%Y-%m-%d %H:%M:%S.%f'), reverse=False)
     # Creating a dataframe from selected json objets
-    df = pd.DataFrame(sortedData, columns=[
-                      'timestamp', 'duration', 'nr_words', 'source_language', 'target_language', 'client_name'])
+    df = pd.DataFrame(sortedData,
+                      columns=['timestamp', 'duration', 'nr_words', 'source_language', 'target_language', 'client_name'])
 
     # Conveting to datetime and making index out of timestamp
     df['timestamp'] = pd.to_datetime(df.timestamp)
@@ -52,7 +52,7 @@ def main(args):
                 sys.exit(1)
             else:
                 print("Filter results by translation -> source_language:{}, target_language:{}"
-                    .format(source_language, target_language))
+                      .format(source_language, target_language))
                 df = df[df.target_language == target_language]
                 df = df[df.source_language == source_language]
                 checkDataAmount(df.index)
@@ -72,8 +72,7 @@ def main(args):
     df = df.fillna(0)
     df = df.reset_index()
     # Renaming and converting to string
-    df.rename(columns={'timestamp': 'time',
-                       'MA': 'average_delivery_time'}, inplace=True)
+    df.rename(columns={'timestamp': 'time', 'MA': 'average_delivery_time'}, inplace=True)
     df['time'] = df['time'].dt.strftime('%Y-%m-%d %H:%M:%S')
 
     # Finally writing to the output file in required format
