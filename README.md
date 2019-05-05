@@ -2,7 +2,7 @@
 
 *eg: python solution.py --input_file events.json --window_size 10*
 
-### optional arguments
+### Optional arguments
 ```
     --output_loc      Relative path to save results (Defult: same directory output_result.json).
 ```
@@ -19,6 +19,6 @@
 ```
 *eg: python solution.py --input_file events.json --window_size 10 --client easyjet*
 
-### Requirements
+### Developed Using
     python 3.6
     pandas 0.23.4

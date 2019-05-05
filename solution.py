@@ -88,6 +88,7 @@ def main(args):
     # Filling NAN and reseting index
     df = df.fillna(0)
     df = df.reset_index()
+
     # Renaming and converting to string
     df.rename(columns={'timestamp': 'time', 'MA': 'average_delivery_time'}, inplace=True)
     df['time'] = df['time'].dt.strftime('%Y-%m-%d %H:%M:%S')
@@ -107,7 +108,7 @@ def main(args):
 def checkDataAmount(data):
     # Checking for the amount of data after filtering.
     if len(data) <= 1:
-        print("No enough data to process.")
+        print("Not enough data to process.")
         sys.exit(1)
 
 
