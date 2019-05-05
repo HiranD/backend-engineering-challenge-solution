@@ -2,10 +2,8 @@
 
 *eg: python solution.py --input_file events.json --window_size 10*
 
-### _python solution.py --help_
-
+### optional arguments
 ```
-optional arguments:
     --output_loc      Relative path to save results (Defult: same directory output_result.json).
 ```
 *eg: python solution.py --input_file events.json --window_size 10 --output_loc ../output/result.json*
