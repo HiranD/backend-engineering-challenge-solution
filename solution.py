@@ -17,7 +17,7 @@ def main(args):
         print("Please check the given file is present at the given location -> " + str(e))
         sys.exit(1)
     except ValueError as e:
-        print("Please check the given file content comply with needed JSON format -> " + str(e))
+        print("Please check the given file content comply with needed file format -> " + str(e))
         sys.exit(1)
     except:
         print("Error: Check following stack trace for more info.")
@@ -26,12 +26,16 @@ def main(args):
 
     checkDataAmount(data)
 
-    # In case sorting the rocords by time
-    sortedData = sorted(data,
-                        key=lambda x: datetime.strptime(x['timestamp'], '%Y-%m-%d %H:%M:%S.%f'), reverse=False)
-    # Creating a dataframe from selected json objets
-    df = pd.DataFrame(sortedData,
-                      columns=['timestamp', 'duration', 'nr_words', 'source_language', 'target_language', 'client_name'])
+    try:
+        # In case sorting the rocords by time
+        sortedData = sorted(data,
+                            key=lambda x: datetime.strptime(x['timestamp'], '%Y-%m-%d %H:%M:%S.%f'), reverse=False)
+        # Creating a dataframe from selected json objets
+        df = pd.DataFrame(sortedData,
+                        columns=['timestamp', 'duration', 'nr_words', 'source_language', 'target_language', 'client_name'])
+    except Exception as e:
+        print("Error in the format of the given data -> " + str(e))
+        sys.exit(1)
 
     # Conveting to datetime and making index out of timestamp
     df['timestamp'] = pd.to_datetime(df.timestamp)
@@ -43,7 +47,7 @@ def main(args):
     # Clients filter
     if args.client is not None:
         if args.client not in df.client_name.unique():
-            print('Given target_language does not exist!')
+            print('Given client_name does not exist!')
             sys.exit(1)
         else:
             print("Filter data by client -> {}".format(args.client))
