@@ -12,11 +12,10 @@ optional arguments:
 
 ### Additional features
     --translation       Filter data by translation type (source_language:target_language).
+    *eg: python solution.py --input_file events.json --window_size 10 --translation en:fr*
+
     --client            Filter data by client name.
-
-
-*eg: python solution.py --input_file events.json --window_size 10 --translation en:fr*
-*eg: python solution.py --input_file events.json --window_size 10 --client easyjet*
+    *eg: python solution.py --input_file events.json --window_size 10 --client easyjet*
 
 ### Requirements
     python 3.6
