@@ -13,6 +13,9 @@ def main(args):
         with open(args.path_to_json) as f:
             for line in f:
                 data.append(json.loads(line))
+    except FileNotFoundError as e:
+        print("Please check the given file is present at the given location -> " + str(e))
+        sys.exit(1)
     except ValueError as e:
         print("Please check the given file content comply with needed JSON format -> " + str(e))
         sys.exit(1)
@@ -37,6 +40,16 @@ def main(args):
     start_time = df.index.min().floor('min')
     end_time = df.index.max().ceil('min')
 
+    # Clients filter
+    if args.client is not None:
+        if args.client not in df.client_name.unique():
+            print('Given target_language does not exist!')
+            sys.exit(1)
+        else:
+            print("Filter data by client -> {}".format(args.client))
+            df = df[df.client_name == args.client]
+            checkDataAmount(df.index)
+
     # Translation filter
     if args.translate is not None:
         try:
@@ -51,7 +64,7 @@ def main(args):
                 print('Given source_language does not exist!')
                 sys.exit(1)
             else:
-                print("Filter results by translation -> source_language:{}, target_language:{}"
+                print("Filter data by translation -> source_language:{}, target_language:{}"
                       .format(source_language, target_language))
                 df = df[df.target_language == target_language]
                 df = df[df.source_language == source_language]
@@ -117,7 +130,12 @@ parser.add_argument('--output_loc',
 parser.add_argument('--translation',
                     dest='translate',
                     type=str,
-                    help='Filter results by translation type (source_language:target_language)')
+                    help='Filter data by translation type (source_language:target_language).')
+
+parser.add_argument('--client',
+                    dest='client',
+                    type=str,
+                    help='Filter data by client name.')
 
 if __name__ == "__main__":
     args = parser.parse_args()
